@@ -67,7 +67,7 @@ public final class Animator extends JPanel implements ActionListener {
 		int index1 = (int) (Math.random() * colors.length);
 
 
-		g2.setColor( colors[index1]);
+		g2.setColor( Color.BLACK);
 		g2.fillRect(0, 0, this.getWidth(), this.getHeight());
 		// draw balls
 
@@ -76,7 +76,7 @@ public final class Animator extends JPanel implements ActionListener {
 			int index2 = (int) (Math.random() * colors.length);
 
 
-			g2.setColor( colors[index2]);
+			g2.setColor( Color.BLUE);
 
 			double x = b.x - b.radius;
 			double y = b.y + b.radius;

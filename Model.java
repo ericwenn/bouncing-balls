@@ -12,6 +12,8 @@ class Model {
 
     private double areaWidth, areaHeight;
 
+    private static final double GRAVITY = -9.81;
+
     Ball[] balls;
 
     Model(double width, double height) {
@@ -20,27 +22,31 @@ class Model {
 
         // Initialize the model with a few balls
         balls = new Ball[2];
-        balls[0] = new Ball(3, 2, -1.5, -1.2, .2);
+        balls[0] = new Ball(3, 2, 0, 0, .2);
         balls[1] = new Ball(1.8, 1.2, .2, .2, 0.2);
     }
 
     void step(double deltaT) {
 
-        for (int i = 0; i < balls.length; i++) {
-            Ball b = balls[i];
-            // detect collision with the border
 
+        double totalEnergy = 0;
+
+        for (int i = 0; i < balls.length; i++) {
+
+            Ball b = balls[i];
+
+            // Check collision with borders
+            // If collision, change direction and reset position to account for too big deltaT.
             if (b.x < b.radius || b.x > areaWidth - b.radius) {
-                if( b.vx > 0) {
+                if (b.vx > 0) {
                     b.x = areaWidth - b.radius;
                 } else {
                     b.x = b.radius;
                 }
-                b.vx *= -1; // change direction of ball
+                b.vx *= -1;
             }
-
             if (b.y < b.radius || b.y > areaHeight - b.radius) {
-                if( b.vy > 0) {
+                if (b.vy > 0) {
                     b.y = areaHeight - b.radius;
                 } else {
                     b.y = b.radius;
@@ -49,53 +55,78 @@ class Model {
             }
 
 
+            // Check collision with other balls
+            // Only check each pair once
             for (int j = i + 1; j < balls.length; j++) {
+
                 Ball ob = balls[j];
+
+
                 if (doesCollide(b, ob)) {
 
+                    // Separate balls until they are *just* colliding.
+                    // Again this is because the deltaT might be too big.
                     separate(b, ob, true);
 
 
+                    Vector b_velocity = new Vector(b.vx, b.vy);
+                    Vector ob_velocity = new Vector(ob.vx, ob.vy);
 
-                    Polar cvv = rectToPolar(new Vector(ob.x - b.x, ob.y - b.y));
-
-
-                    Polar v1 = veloRelaVect(new Vector(b.vx, b.vy), cvv);
-
-                    Polar v2 = veloRelaVect(new Vector(ob.vx, ob.vy), cvv);
-
-                    VelocityPair vp = newVelo(v1.r, b.mass, v2.r, ob.mass);
-
-                    Polar vv1 = new Polar(vp.v1, cvv.ang);
-                    Polar vv2 = new Polar(vp.v2, cvv.ang);
+                    // Get vector between the two balls centres, this is the collision vector
+                    Vector collisionVector = new Vector(ob.x - b.x, ob.y - b.y);
 
 
-
-                    Vector rel1 = polarToRect(v1);
-                    Vector relafter1 = polarToRect(vv1);
-                    Vector rel2 = polarToRect(v2);
-                    Vector relafter2 = polarToRect(vv2);
+                    // Calculate both balls velocity parallel to the collision vector
+                    Polar b_collisionVelocityBefore = project(b_velocity, collisionVector);
+                    Polar ob_collisionVelocityBefore = project(ob_velocity, collisionVector);
 
 
-                    Vector newVelo1 = new Vector(b.vx - rel1.x + relafter1.x, b.vy - rel1.y + relafter1.y);
-                    Vector newVelo2 = new Vector(ob.vx - rel2.x + relafter2.x, ob.vy - rel2.y + relafter2.y);
+                    // The velocity parallel to the collision will be recalculated, so we remove this part for now
+                    Vector b_tmpVelocity = Vector.subtract(b_velocity, polarToRect(b_collisionVelocityBefore));
+                    Vector ob_tmpVelocity = Vector.subtract(ob_velocity, polarToRect(ob_collisionVelocityBefore));
 
 
-                    b.vx = newVelo1.x;
-                    b.vy = newVelo1.y;
+                    // Calculate the balls new velocity parallel to the collsion vector
+                    VelocityPair vp = collide(b_collisionVelocityBefore.r, b.mass, ob_collisionVelocityBefore.r, ob.mass);
 
-                    ob.vx = newVelo2.x;
-                    ob.vy = newVelo2.y;
+                    Polar b_collisionVelocityAfter = new Polar(vp.v1, b_collisionVelocityBefore.ang);
+                    Polar ob_collisionVelocityAfter = new Polar(vp.v2, ob_collisionVelocityBefore.ang);
 
-                    //separate(b, ob, false);
+
+                    // Add the velocity prallell to the collision to the original velocity
+                    b_velocity = Vector.add(b_tmpVelocity, polarToRect(b_collisionVelocityAfter));
+                    ob_velocity = Vector.add(ob_tmpVelocity, polarToRect(ob_collisionVelocityAfter));
+
+
+                    // Change the balls velocity
+                    b.vx = b_velocity.x;
+                    b.vy = b_velocity.y;
+
+                    ob.vx = ob_velocity.x;
+                    ob.vy = ob_velocity.y;
+
                 }
+
+
             }
 
+            b.vy = b.vy + GRAVITY * deltaT;
 
             // compute new position according to the speed of the ball
             b.x += deltaT * b.vx;
             b.y += deltaT * b.vy;
         }
+    }
+
+    private static VelocityPair collide(double u1, double m1, double u2, double m2) {
+        double I = u1 * m1 + u2 * m2;
+
+        double R = -(u2 - u1);
+
+        double v1 = (I - m2 * R) / (m2 + m1);
+        double v2 = R + v1;
+
+        return new VelocityPair(v1, v2);
     }
 
 
@@ -124,27 +155,16 @@ class Model {
     }
 
 
-    private static Polar veloRelaVect(Vector v, Polar collisionVector) {
-
-        Polar vPolar = rectToPolar(v);
-        double angBetween = Math.abs(collisionVector.ang - vPolar.ang);
-        double cos = Math.cos(Math.toRadians(angBetween));
-        double r = vPolar.r * cos;
-        return new Polar(r, collisionVector.ang);
+    private static Polar project(Vector v, Vector projectOn) {
+        return project(rectToPolar(v), rectToPolar(projectOn));
     }
 
-    private static VelocityPair newVelo(double u1, double m1, double u2, double m2) {
 
-
-        double I = u1 * m1 + u2 * m2;
-
-        double R = -(u2 - u1);
-
-        double v1 = (I - m2 * R) / (m2 + m1);
-        double v2 = R + v1;
-
-        return new VelocityPair(v1, v2);
-
+    private static Polar project(Polar v, Polar projectOn) {
+        double angBetween = Math.abs(projectOn.ang - v.ang);
+        double cos = Math.cos(Math.toRadians(angBetween));
+        double r = v.r * cos;
+        return new Polar(r, projectOn.ang);
     }
 
 
@@ -159,7 +179,7 @@ class Model {
             this.vx = vx;
             this.vy = vy;
             this.radius = r;
-            this.mass = Math.pow(r,2)*10;
+            this.mass = Math.pow(r, 2) * 10;
         }
 
         /**
@@ -196,6 +216,18 @@ class Model {
                     ", y=" + y +
                     '}';
         }
+
+
+        public static Vector subtract(Vector v1, Vector v2) {
+            return new Vector(v1.x - v2.x, v1.y - v2.y);
+        }
+
+        public static Vector add(Vector v1, Vector v2) {
+            return new Vector(v1.x + v2.x, v1.y + v2.y);
+
+        }
+
+
     }
 
 
@@ -234,8 +266,10 @@ class Model {
         int maybeAddition = v.x < 0 ? 180 : 0;
         double r = Math.sqrt(Math.pow(v.x, 2) + Math.pow(v.y, 2));
 
-        double ang = Math.toDegrees(Math.atan(v.y / v.x));
-        return new Polar(r, ang + maybeAddition);
+        double ang = Math.toDegrees(Math.atan(v.y / v.x)) + maybeAddition;
+
+        ang = ang < 0 ? ang + 360 : ang;
+        return new Polar(r, ang);
 
     }
 
@@ -249,50 +283,117 @@ class Model {
 
     public static void main(String[] args) {
 
-        testVeloRelaVect();
-/*
-        Vector v1 = new Vector(1, 0);
-        Vector v2 = new Vector(-1, 0);
-        Vector v3 = new Vector(1, 1);
-        Vector v4 = new Vector(-1, 1);
-        Vector v5 = new Vector(2, 1);
-        Vector v6 = new Vector(1, 3);
-
-
-        Polar p1 = rectToPolar(v1);
-        System.out.println(p1);
-
-        Polar p2 = rectToPolar(v2);
-        System.out.println(p2);
-
-        Polar p3 = rectToPolar(v3);
-        System.out.println(p3);
-
-        Polar p4 = rectToPolar(v4);
-        System.out.println(p4);
-
-        Polar p5 = rectToPolar(v5);
-        System.out.println(p5);
-
-        Polar p6 = rectToPolar(v6);
-        System.out.println(p6);
-        */
+        testProjection();
+        testPolarToRect();
+        testRectToPolar();
+        testEnergyPreserved();
 
     }
 
-    private static void testVeloRelaVect() {
 
-        Polar p = new Polar(100, 90);
+    private static void testPolarToRect() {
 
+        Polar[] polars = new Polar[]{
+                new Polar(1, 0),
+                new Polar(1, 90),
+                new Polar(1, 180),
+                new Polar(1, 270)
+        };
 
-        Vector v1 = new Vector(1, 1);
-        Vector v2 = new Vector(1, 0);
-        Vector v3 = new Vector(0, 1);
-        Vector v4 = new Vector(-1, 1);
+        Vector[] vectors = new Vector[]{
+                new Vector(1, 0),
+                new Vector(0, 1),
+                new Vector(-1, 0),
+                new Vector(0, -1),
+        };
 
-        System.out.println(veloRelaVect(v1,p));
-        System.out.println(veloRelaVect(v2,p));
-        System.out.println(veloRelaVect(v3,p));
-        System.out.println(veloRelaVect(v4,p));
+        for (int i = 0; i < polars.length; i++) {
+
+            Vector calculatedVector = polarToRect(polars[i]);
+            Vector correctVector = vectors[i];
+            if (Math.abs(calculatedVector.x - correctVector.x) > 1e-10 || Math.abs(calculatedVector.x - correctVector.x) > 1e-10) {
+                System.out.println("polarToRect does not work. Expected " + correctVector + ", but got " + calculatedVector);
+                return;
+            }
+
+        }
+
+        System.out.println("PolarToRect works");
+
     }
+
+
+    private static void testRectToPolar() {
+
+        Polar[] polars = new Polar[]{
+                new Polar(1, 0),
+                new Polar(1, 90),
+                new Polar(1, 180),
+                new Polar(1, 270)
+        };
+
+        Vector[] vectors = new Vector[]{
+                new Vector(1, 0),
+                new Vector(0, 1),
+                new Vector(-1, 0),
+                new Vector(0, -1),
+        };
+
+        for (int i = 0; i < vectors.length; i++) {
+
+            Polar calculatedPolar = rectToPolar(vectors[i]);
+            Polar correctPolar = polars[i];
+
+            if (Math.abs(calculatedPolar.r - correctPolar.r) > 1e-10 || Math.abs(calculatedPolar.ang - correctPolar.ang) > 1e-10) {
+                System.out.println("rectToPolar does not work. Expected " + correctPolar + ", but got " + calculatedPolar);
+                return;
+            }
+
+        }
+
+        System.out.println("RectToPolar works");
+
+    }
+
+    private static void testProjection() {
+
+        Vector v = new Vector(20, 20);
+        Vector projectionVector = new Vector(1, 0);
+
+        Polar projection = project(v, projectionVector);
+
+        if (projection.r - 20 < 1e-5 && projection.ang == 0) {
+            System.out.println("Projection works");
+        } else {
+            System.out.println("Projections does not work. r=" + projection.r + " (expected 20) ang=" + projection.ang + " (expected 0)");
+        }
+
+
+    }
+
+
+    private static void testEnergyPreserved() {
+
+
+        double u1 = 2.0;
+        double m1 = 2.0;
+
+        double u2 = -1.0;
+        double m2 = 1.5;
+
+        VelocityPair vp = collide(u1, m1, u2, m2);
+
+        double v1 = vp.v1;
+        double v2 = vp.v2;
+
+        double delta = (m1 * Math.pow(u1, 2) + m2 * Math.pow(u2, 2)) / 2 - (m1 * Math.pow(v1, 2) + m2 * Math.pow(v2, 2)) / 2;
+
+        if (Math.abs(delta) < 1e-10) {
+            System.out.println("Energy preserved");
+        } else {
+            System.out.println("Energy not preserved, delta=" + delta);
+        }
+    }
+
+
 }
