@@ -28,28 +28,37 @@ class Model {
 	void step(double deltaT) {
 		// TODO this method implements one step of simulation with a step deltaT
 		for (Ball b : balls) {
-			System.out.println( b.x );
 			// detect collision with the border
-			/*
 			if (b.x < b.radius || b.x > areaWidth - b.radius) {
-
 				b.vx *= -1; // change direction of ball
 			}
+
 			if (b.y < b.radius || b.y > areaHeight - b.radius) {
 				b.vy *= -1;
 			}
-			
+
+
+			for( Ball otherB : balls) {
+				if( b != otherB) {
+					if(doesCollide(b, otherB)) {
+						b.vx *= -2;
+						b.vy *= -2;
+					}
+
+				}
+			}
+
 			// compute new position according to the speed of the ball
 			b.x += deltaT * b.vx;
 			b.y += deltaT * b.vy;
-			*/
 		}
 	}
 
 
 
 	static boolean doesCollide(Ball b1, Ball b2) {
-		return true;
+		double distance = Math.sqrt(Math.pow(b1.x - b2.x, 2) + Math.pow(b1.y - b2.y, 2));
+		return distance < b1.radius + b2.radius;
 	}
 	
 	/**
