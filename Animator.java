@@ -1,5 +1,3 @@
-package bouncing_balls;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -11,7 +9,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-import bouncing_balls.Model.Ball;
 
 /**
  * Animated JPanel drawing the bouncing balls. No modifications are needed in this class.
@@ -67,7 +64,7 @@ public final class Animator extends JPanel implements ActionListener {
 		g2.fillRect(0, 0, this.getWidth(), this.getHeight());
 		// draw balls
 		g2.setColor(Color.RED);
-		for (Ball b : model.balls) {
+		for (Model.Ball b : model.balls) {
 			double x = b.x - b.radius;
 			double y = b.y + b.radius;
 			// paint balls (y-coordinates are inverted)

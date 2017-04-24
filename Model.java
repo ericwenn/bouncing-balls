@@ -1,4 +1,3 @@
-package bouncing_balls;
 
 /**
  * The physics model.
@@ -12,7 +11,7 @@ package bouncing_balls;
  */
 class Model {
 
-	double areaWidth, areaHeight;
+	private double areaWidth, areaHeight;
 	
 	Ball [] balls;
 
@@ -29,8 +28,11 @@ class Model {
 	void step(double deltaT) {
 		// TODO this method implements one step of simulation with a step deltaT
 		for (Ball b : balls) {
+			System.out.println( b.x );
 			// detect collision with the border
+			/*
 			if (b.x < b.radius || b.x > areaWidth - b.radius) {
+
 				b.vx *= -1; // change direction of ball
 			}
 			if (b.y < b.radius || b.y > areaHeight - b.radius) {
@@ -40,7 +42,14 @@ class Model {
 			// compute new position according to the speed of the ball
 			b.x += deltaT * b.vx;
 			b.y += deltaT * b.vy;
+			*/
 		}
+	}
+
+
+
+	static boolean doesCollide(Ball b1, Ball b2) {
+		return true;
 	}
 	
 	/**
@@ -49,8 +58,8 @@ class Model {
 	class Ball {
 		
 		Ball(double x, double y, double vx, double vy, double r) {
-			this.x = x;
-			this.y = y;
+			this.x = x; // Center of ball
+			this.y = y; // Center of ball
 			this.vx = vx;
 			this.vy = vy;
 			this.radius = r;
