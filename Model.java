@@ -60,6 +60,9 @@ class Model {
 		double distance = Math.sqrt(Math.pow(b1.x - b2.x, 2) + Math.pow(b1.y - b2.y, 2));
 		return distance < b1.radius + b2.radius;
 	}
+
+
+
 	
 	/**
 	 * Simple inner class describing balls.
@@ -78,5 +81,73 @@ class Model {
 		 * Position, speed, and radius of the ball. You may wish to add other attributes.
 		 */
 		double x, y, vx, vy, radius;
+	}
+
+
+
+
+	static class Vector {
+
+		double x;
+		double y;
+
+		public Vector(double x, double y) {
+			this.x = x;
+			this.y = y;
+		}
+
+		@Override
+		public String toString() {
+			return "Vector{" +
+					"x=" + x +
+					", y=" + y +
+					'}';
+		}
+	}
+
+	static class Polar {
+		double r;
+		double ang;
+
+		public Polar(double r, double ang) {
+			this.r = r;
+			this.ang = ang;
+		}
+
+		@Override
+		public String toString() {
+			return "Polar{" +
+					"r=" + r +
+					", ang=" + ang +
+					'}';
+		}
+	}
+
+
+
+	static Polar rectToPolar( Vector v) {
+
+		double r = Math.sqrt( Math.pow(v.x, 2) + Math.pow(v.y, 2));
+		double ang = Math.toDegrees(Math.atan( v.y/v.x));
+
+		return new Polar( r, ang );
+
+	}
+
+	static Vector polarToRect( Polar p ) {
+		double x = p.r*Math.cos(Math.toRadians(p.ang));
+		double y = p.r*Math.sin(Math.toRadians(p.ang));
+
+		return new Vector(x,y);
+	}
+
+
+
+	public static void main( String[] args ) {
+		Vector v = new Vector(1,-5);
+		Polar p = rectToPolar(v);
+		Vector v1 = polarToRect(p);
+		System.out.println( p);
+		System.out.println( v1);
 	}
 }
