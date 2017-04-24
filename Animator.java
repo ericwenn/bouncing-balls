@@ -58,13 +58,26 @@ public final class Animator extends JPanel implements ActionListener {
 
 	@Override
 	protected void paintComponent(Graphics g) {
+
+		Color[] colors = new Color[]{Color.RED, Color.BLACK, Color.BLUE, Color.PINK, Color.CYAN};
+
+
 		Graphics2D g2 = (Graphics2D) g;
 		// clear the canvas
-		g2.setColor(Color.WHITE);
+		int index1 = (int) (Math.random() * colors.length);
+
+
+		g2.setColor( colors[index1]);
 		g2.fillRect(0, 0, this.getWidth(), this.getHeight());
 		// draw balls
-		g2.setColor(Color.RED);
+
 		for (Model.Ball b : model.balls) {
+
+			int index2 = (int) (Math.random() * colors.length);
+
+
+			g2.setColor( colors[index2]);
+
 			double x = b.x - b.radius;
 			double y = b.y + b.radius;
 			// paint balls (y-coordinates are inverted)
