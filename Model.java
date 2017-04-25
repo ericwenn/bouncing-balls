@@ -23,7 +23,7 @@ class Model {
         // Initialize the model with a few balls
         balls = new Ball[2];
         balls[0] = new Ball(3, 2, 0, 0, .2);
-        balls[1] = new Ball(1.8, 1.2, .2, .2, 0.2);
+        balls[1] = new Ball(1.8, 1.2, .3, .2, 0.2);
     }
 
     void step(double deltaT) {
