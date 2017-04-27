@@ -59,14 +59,14 @@ public final class Animator extends JPanel implements ActionListener {
 	@Override
 	protected void paintComponent(Graphics g) {
 
-		Color[] colors = new Color[]{Color.RED, Color.BLACK, Color.BLUE, Color.PINK, Color.CYAN};
+		Color[] colors = new Color[]{Color.RED, Color.BLACK, Color.BLUE, Color.PINK, Color.CYAN, Color.DARK_GRAY, Color.GREEN, Color.MAGENTA, Color.ORANGE, Color.YELLOW};
 
 
 		Graphics2D g2 = (Graphics2D) g;
 		// clear the canvas
 		int index1 = (int) (Math.random() * colors.length);
 
-
+		//g2.setColor( colors[index1]);
 		g2.setColor( Color.BLACK);
 		g2.fillRect(0, 0, this.getWidth(), this.getHeight());
 		// draw balls
@@ -76,9 +76,11 @@ public final class Animator extends JPanel implements ActionListener {
 			int index2 = (int) (Math.random() * colors.length);
 
 
-			g2.setColor( Color.BLUE);
+			g2.setColor( velocityColor(b));
+//            g2.setColor( colors[index2]);
 
-			double x = b.x - b.radius;
+
+            double x = b.x - b.radius;
 			double y = b.y + b.radius;
 			// paint balls (y-coordinates are inverted)
 			Ellipse2D.Double e = new Ellipse2D.Double(x * pixelsPerMeter, this.getHeight() - (y * pixelsPerMeter),
@@ -86,6 +88,18 @@ public final class Animator extends JPanel implements ActionListener {
 			g2.fill(e);
 		}
 	}
+
+
+	public Color velocityColor( Model.Ball b ) {
+
+	    double maxVelocity = 10;
+	    double ballVelocity = Math.sqrt( Math.pow(b.vx,2) + Math.pow(b.vy,2));
+
+	    double relativeVelocity = ballVelocity / maxVelocity;
+
+	    return new Color( (int)(relativeVelocity * 255), 0, 0);
+
+    }
 	
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -98,7 +112,7 @@ public final class Animator extends JPanel implements ActionListener {
         // creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                Animator anim = new Animator(800, 600, 60);
+                Animator anim = new Animator(800, 600, 120);
                 JFrame frame = new JFrame("Bouncing balls");
             	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             	frame.add(anim);

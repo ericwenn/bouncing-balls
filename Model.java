@@ -21,9 +21,17 @@ class Model {
         areaHeight = height;
 
         // Initialize the model with a few balls
-        balls = new Ball[2];
+        balls = new Ball[10];
         balls[0] = new Ball(3, 2, 0, 0, .2);
         balls[1] = new Ball(1.8, 1.2, .2, .2, 0.2);
+        balls[2] = new Ball(1.8, 2.2, .5, 2.2, 0.2);
+        balls[3] = new Ball(2.8, 3.2, .3, 1.2, 0.2);
+        balls[4] = new Ball(1.8, 2.5, .7, 3.2, 0.2);
+        balls[5] = new Ball(0.8, 1.2, .8, 1.2, 0.2);
+        balls[6] = new Ball(0.3, 1.2, .1, 2, 0.2);
+        balls[7] = new Ball(1.2, 0.2, 1.2, 3.2, 0.2);
+        balls[8] = new Ball(2.8, .5, .2, 0.2, 0.2);
+        balls[9] = new Ball(3.2, 1.2, .2, .2, 0.2);
     }
 
     void step(double deltaT) {
@@ -43,7 +51,7 @@ class Model {
                 } else {
                     b.x = b.radius;
                 }
-                b.vx *= -1;
+                b.vx *= -0.95;
             }
             if (b.y < b.radius || b.y > areaHeight - b.radius) {
                 if (b.vy > 0) {
@@ -51,7 +59,7 @@ class Model {
                 } else {
                     b.y = b.radius;
                 }
-                b.vy *= -1;
+                b.vy *= -.95;
             }
 
 
@@ -66,7 +74,7 @@ class Model {
 
                     // Separate balls until they are *just* colliding.
                     // Again this is because the deltaT might be too big.
-                    separate(b, ob, true);
+                    int stepsReversed = reverse(b, ob);
 
 
                     Vector b_velocity = new Vector(b.vx, b.vy);
@@ -105,6 +113,8 @@ class Model {
                     ob.vx = ob_velocity.x;
                     ob.vy = ob_velocity.y;
 
+                    unreverse(b, ob, stepsReversed);
+
                 }
 
 
@@ -130,15 +140,25 @@ class Model {
     }
 
 
-    private static void separate(Ball b1, Ball b2, boolean reverse) {
+    private static int reverse(Ball b1, Ball b2) {
 
-        double delta = .001;
+        double delta = -.001;
 
-        if (reverse) {
-            delta *= -1;
-        }
-
+        int steps = 0;
         while (doesCollide(b1, b2)) {
+            b1.x += delta * b1.vx;
+            b1.y += delta * b1.vy;
+
+            b2.x += delta * b2.vx;
+            b2.y += delta * b2.vy;
+            steps++;
+        }
+        return steps;
+    }
+
+    private static void unreverse(Ball b1, Ball b2, int steps) {
+        double delta = 0.001;
+        for( int i = 0; i<steps; i++) {
             b1.x += delta * b1.vx;
             b1.y += delta * b1.vy;
 
@@ -146,6 +166,8 @@ class Model {
             b2.y += delta * b2.vy;
         }
     }
+
+
 
     private static boolean doesCollide(Ball b1, Ball b2) {
 
