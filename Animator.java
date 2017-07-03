@@ -59,12 +59,8 @@ public final class Animator extends JPanel implements ActionListener {
 	@Override
 	protected void paintComponent(Graphics g) {
 
-		Color[] colors = new Color[]{Color.RED, Color.BLACK, Color.BLUE, Color.PINK, Color.CYAN, Color.DARK_GRAY, Color.GREEN, Color.MAGENTA, Color.ORANGE, Color.YELLOW};
-
-
 		Graphics2D g2 = (Graphics2D) g;
 		// clear the canvas
-		int index1 = (int) (Math.random() * colors.length);
 
 		//g2.setColor( colors[index1]);
 		g2.setColor( Color.BLACK);
@@ -73,11 +69,7 @@ public final class Animator extends JPanel implements ActionListener {
 
 		for (Model.Ball b : model.balls) {
 
-			int index2 = (int) (Math.random() * colors.length);
-
-
-			g2.setColor( velocityColor(b));
-//            g2.setColor( colors[index2]);
+            g2.setColor( Color.RED);
 
 
             double x = b.x - b.radius;

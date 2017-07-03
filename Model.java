@@ -21,17 +21,10 @@ class Model {
         areaHeight = height;
 
         // Initialize the model with a few balls
-        balls = new Ball[10];
+        balls = new Ball[3];
         balls[0] = new Ball(3, 2, 0, 0, .2);
         balls[1] = new Ball(1.8, 1.2, .2, .2, 0.2);
         balls[2] = new Ball(1.8, 2.2, .5, 2.2, 0.2);
-        balls[3] = new Ball(2.8, 3.2, .3, 1.2, 0.2);
-        balls[4] = new Ball(1.8, 2.5, .7, 3.2, 0.2);
-        balls[5] = new Ball(0.8, 1.2, .8, 1.2, 0.2);
-        balls[6] = new Ball(0.3, 1.2, .1, 2, 0.2);
-        balls[7] = new Ball(1.2, 0.2, 1.2, 3.2, 0.2);
-        balls[8] = new Ball(2.8, .5, .2, 0.2, 0.2);
-        balls[9] = new Ball(3.2, 1.2, .2, .2, 0.2);
     }
 
     void step(double deltaT) {
@@ -74,7 +67,7 @@ class Model {
 
                     // Separate balls until they are *just* colliding.
                     // Again this is because the deltaT might be too big.
-                    int stepsReversed = reverse(b, ob);
+                    //int stepsReversed = reverse(b, ob);
 
 
                     Vector b_velocity = new Vector(b.vx, b.vy);
@@ -113,7 +106,7 @@ class Model {
                     ob.vx = ob_velocity.x;
                     ob.vy = ob_velocity.y;
 
-                    unreverse(b, ob, stepsReversed);
+                   // unreverse(b, ob, stepsReversed);
 
                 }
 
